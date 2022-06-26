@@ -1,0 +1,67 @@
+@using Service.DtoModel
+@model Service.DtoModel.MovieInDto
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Dodaj film";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Dodaj film</h1>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="MovieTime" class="control-label"></label>
+                <input asp-for="MovieTime" class="form-control" />
+                <span asp-validation-for="MovieTime" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Director" class="control-label"></label>
+                <input asp-for="Director" class="form-control" />
+                <span asp-validation-for="Director" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Premiere" class="control-label"></label>
+                <input type="date" asp-for="Premiere" class="form-control" />
+                <span asp-validation-for="Premiere" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea type="text" rows="5" cols="40" style="resize: none;" asp-for = "Description" class="form-control"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CategoryId" class="control-label"></label>
+                <select asp-for="CategoryId" class="form-control">
+                    @foreach (CategoryOutDto category in ViewBag.Categories)
+                    {
+                        <option value=@category.Id>@category.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageUrl" class="control-label"></label>
+                <input asp-for="ImageUrl" class="form-control" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Dodaj film" class="btn btn-primary" />
+                <a onclick="window.history.go(-1)" class="btn btn-info">Powrót do listy</a>
+            </div>
+        </form>
+    </div>
+</div>
+<br />
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

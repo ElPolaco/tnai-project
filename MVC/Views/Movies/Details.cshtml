@@ -1,0 +1,198 @@
+@using Microsoft.AspNetCore.Identity
+@using Model.Identity
+@using System.Security.Claims
+@using Service.DtoModel;
+@using Service.SerachAndPage
+@model Service.DtoModel.MovieOutDto
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject SignInManager<ApplicationUser> SignInManager
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+@{
+    ViewData["Title"] = "Szczegóły filmu";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+
+    Pager pager = new Pager();
+
+    if(ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+    }
+
+    IEnumerable<CommentOutDto> comments = ViewBag.AllComments;
+}
+
+<button class="btn btn-primary"><a onclick="window.history.go(-@pager.CurrentPage)">Powrót do listy</a></button>
+@{
+ if ((AuthorizationService.AuthorizeAsync(User, "Admin")).Result.Succeeded)
+ {
+         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edytuj film</a>
+ }
+}
+
+
+<div class="movie-details-wrapper soft-edges">
+    <div class="movie-details-header">
+        <div class="movie-poster-wrapper line-right">
+            <img alt="movie-poster" src="@Model.ImageUrl" />
+        </div>
+        <div class="movie-details-misc">
+            <div class="movie-details-title-wrapper">
+                <p>
+                    <span class="movie-title">
+                        <span>@(Model.Name)</span>
+                    </span>
+                    <span class="movie-title-category">
+                       @(Model.CategoryName)
+                    </span>
+                </p>
+            </div>
+            <div class="movie-details-misc-misc">
+                <p>@Html.DisplayNameFor(model => model.Premiere): @(Model.Premiere.ToString("dd/MM/yyyy"))</p>
+                <p>@Html.DisplayNameFor(model => model.Director): @(Model.Director)</p>
+                <p>@Html.DisplayNameFor(model => model.MovieTime): @(Model.MovieTime) min</p>
+                <p>Ocena użytkowników: @if (Model.Comments.Count != 0) {
+                    <span> @comments.Average(x => x.Rating).ToString("0.00") </span>
+                            }
+                            else
+                            {
+                                <span>0.00</span>
+                            }
+                    (@comments.Count() głosów)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="movie-details-description soft-edges">
+    <p style="font-size: 2rem">@Html.DisplayNameFor(model => model.Description):</p>
+    <p>@(Model.Description)</p>
+</div>
+
+
+
+
+<div class="movie-details-comments soft-edges">
+
+<h2>Komentarze:</h2>
+
+    @if (!SignInManager.IsSignedIn(User))
+    {
+        <div class="comment-create">
+            <p><a class="text-primary" href="/Identity/Account/Login">Zaloguj się</a>, aby dodać komentarz</p>
+        </div>
+    }
+    else
+    {
+    
+    <div class="comment-create">
+        <form asp-controller="Comments" asp-action="Create" method="post">
+        <div class="comment-create-content">
+            <div hidden class="form-group">
+                <input name="movieId" class="form-control" value="@Model.Id" />
+            </div>
+            <div class="form-group">
+                <textarea name="content" type="text" rows="5" cols="40" style="resize: none;" class="form-control" ></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="rating">Ocena:</label>
+            <select name="rating" size="1" class="form-control">
+              <option value="0.0">0.0</option>
+              <option value="0.5">0.5</option>
+              <option value="1.0">1.0</option>
+              <option value="1.5">1.5</option>
+              <option value="2.0">2.0</option>
+              <option value="2.5">2.5</option>
+              <option value="3.0">3.0</option>
+              <option value="3.5">3.5</option>
+              <option value="4.0">4.0</option>
+              <option value="4.5">4.5</option>
+              <option value="5.0" selected>5.0</option>
+              <option value="5.5">5.5</option>
+              <option value="6.0">6.0</option>
+              <option value="6.5">6.5</option>
+              <option value="7.0">7.0</option>
+              <option value="7.5">7.5</option>
+              <option value="8.0">8.0</option>
+              <option value="8.5">8.5</option>
+              <option value="9.0">9.0</option>
+              <option value="9.5">9.5</option>
+              <option value="10.0">10.0</option>
+            </select>
+                <input type="submit" value="Dodaj komentarz" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+}
+
+    @{
+        var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
+    }
+
+@if (Model.Comments.Count == 0)
+{
+    <p>Wygląda na to, że nikt jeszcze nie pozostawił swojego komentarza. Może będziesz pierwszy?</p>
+} else {
+    <div class="comments-wrapper">
+        @foreach (var item in Model.Comments)
+        {
+            
+
+            <div class="comment-panel line-bottom">
+                <div class="comment-author">
+                    @Html.DisplayFor(modelItem => item.UserName) <span style="font-weight: normal;">ocenił film na</span> @item.Rating.ToString("0.0") / 10
+                    @if(claim == item.UserId)
+                    {
+                        <a class="btn btn-close" asp-controller="Comments" asp-action="Delete" asp-route-id="@item.Id"></a>
+                    }
+                </div>
+                <div class="comment-content">
+                    @if(item.Content != "") {<p class="comment-content-content soft-edges">@Html.DisplayFor(modelItem => item.Content)</p>}
+                    <p class="smaller-text">Dodano: @(item.LastModified.ToString("dd/MM/yyyy"))</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="pager-container soft-edges">
+        @if (pager.TotalItems > 0)
+        {
+            <ul class="pagination align-content-center">
+            @if(pager.TotalPages > 1)
+            {
+                <li class="page-item @(pager.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="1">First</a>
+                </li>
+                <li class="page-item @(pager.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@(pager.CurrentPage-1)">Prev</a>
+                </li>   
+            }
+
+
+
+                @for (var pg = pager.StartPage; pg <= pager.EndPage; pg++)
+                {
+                    <li class="page-item @(pg == pager.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@pg">@pg</a>
+                    </li>
+                }
+
+                @if(pager.TotalPages > 1)
+                {
+                    <li class="page-item @(pager.CurrentPage == pager.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@(pager.CurrentPage+1)">Next</a>
+                    </li>
+                    <li class="page-item @(pager.CurrentPage == pager.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Movies" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@pager.TotalPages">Last</a>
+                    </li>
+                }
+
+            </ul>
+        }
+    </div>
+}
+
+</div>

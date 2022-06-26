@@ -1,0 +1,103 @@
+@using Service.SerachAndPage
+@model Service.DtoModel.CategoryOutDto
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Szczegóły";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+
+    Pager pager = new Pager();
+
+    if(ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+    }
+}
+
+<h1>Filmy z kategorii @Html.DisplayFor(model => model.Name)</h1>
+
+<hr />
+
+<div class = "col-4 p-0 justify-content-end">
+    <form asp-action="Details" asp-controller="Categories" asp-route-id="@Model.Id" method="get">
+        <div class="input-group">
+            <input class="form-control" type="text" name="keyWord" value="@(pager.KeyWord!=null? pager.KeyWord:"")" placeholder="Szukana fraza" />
+            <span class="btn-group">
+            <input class="btn btn-primary" type="submit" value="Szukaj" />
+            <a asp-action="Details" asp-controller="Categories" asp-route-id="@Model.Id" class="btn btn-dark">Wszystkie filmy</a>
+            </span>
+        </div>
+    </form>
+</div>
+
+<div class="movies-wrapper">
+    @foreach (var item in Model.Movies) {
+        <a asp-controller="Movies" asp-action="Details" asp-route-id="@(item.Id)">
+        <div class="movie-panel soft-edges">
+            <div class="movie-poster-wrapper">
+                <img alt="movie-poster" src="@item.ImageUrl" />
+            </div>
+            <div class="movie-description-wrapper">
+                <div class="movie-title-wrapper">
+                    <span class="movie-title">
+                        <span>@Html.DisplayFor(modelItem => item.Name)</span>
+                    </span>
+                    <span class="movie-title-category">
+                        @Html.DisplayFor(modelItem => item.CategoryName)
+                    </span>
+                </div>
+                <div class="movie-description">
+                    <p>@Html.DisplayFor(modelItem => item.Description)</p>
+                </div>
+                <div class="movie-panel-footer">
+                    <div class="movie-length">
+                        <span>@Html.DisplayFor(modelItem => item.MovieTime) min</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    }
+    </div>
+
+    <div class="pager-container soft-edges">
+        @if (pager.TotalItems > 0)
+        {
+            <ul class="pagination align-content-center">
+            @if(pager.TotalPages > 1)
+            {
+                <li class="page-item @(pager.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-controller="Categories" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="1" asp-route-keyword="@(pager.KeyWord)">First</a>
+                </li>
+                <li class="page-item @(pager.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-controller="Categories" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@(pager.CurrentPage-1)" asp-route-keyword="@(pager.KeyWord)">Prev</a>
+                </li>   
+            }
+
+
+
+                @for (var pg = pager.StartPage; pg <= pager.EndPage; pg++)
+                {
+                    <li class="page-item @(pg == pager.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-controller="Categories" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@pg" asp-route-keyword="@(pager.KeyWord)">@pg</a>
+                    </li>
+                }
+
+                @if(pager.TotalPages > 1)
+                {
+                    <li class="page-item @(pager.CurrentPage == pager.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Categories" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@(pager.CurrentPage+1)" asp-route-keyword="@(pager.KeyWord)">Next</a>
+                    </li>
+                    <li class="page-item @(pager.CurrentPage == pager.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-controller="Categories" asp-action="Details" asp-route-id="@Model.Id" asp-route-page="@pager.TotalPages" asp-route-keyword="@(pager.KeyWord)">Last</a>
+                    </li>
+                }
+
+            </ul>
+        }
+    </div>
+     
+<div>
+    <a class="btn btn-primary" asp-action="Index">Powrót do listy</a>
+</div>

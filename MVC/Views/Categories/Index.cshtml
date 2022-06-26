@@ -1,0 +1,51 @@
+﻿@using Model
+@model IEnumerable<Service.DtoModel.CategoryOutDto>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+@{
+    ViewData["Title"] = "Kategorie filmów";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Kategorie filmów</h1>
+
+
+@{
+ if ((AuthorizationService.AuthorizeAsync(User, "Admin")).Result.Succeeded)
+ {
+    <p>
+    <a class="btn btn-secondary" asp-action="Create">Dodaj nową</a>
+    </p>
+ }
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+               
+                <a class="btn btn-success text-light" asp-action="Details" asp-route-id="@item.Id">Szczegóły</a> 
+                @{
+                    if ((AuthorizationService.AuthorizeAsync(User, "Admin")).Result.Succeeded) {
+                        <span>|</span> <a class="btn btn-warning text-light" asp-action="Edit" asp-route-id="@item.Id">Edytuj</a> <span>|</span> <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Id">Usuń</a>
+                    }
+                }
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
